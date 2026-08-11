@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where Are We Going? 🚢🏝️</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --sky-top: #70a1ff;
+      --sky-bottom: #eccc68;
+      --ocean-blue: #1e90ff;
+      --ocean-dark: #0062cc;
+      --card-bg: #ffffff;
+      --text-main: #2f3542;
+      --text-muted: #747d8c;
+      --green-correct: #2ed573;
+      --green-shadow: #26af5f;
+      --red-wrong: #ff4757;
+      --red-shadow: #d63031;
+      --yellow-btn: #ffa502;
+      --yellow-shadow: #e17055;
+      --font-main: 'Fredoka', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: linear-gradient(180deg, #70a1ff 0%, #a4b0be 40%, #1e90ff 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      color: var(--text-main);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Clouds */
+    .bg-cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50px;
+      pointer-events: none;
+      animation: floatCloud linear infinite;
+    }
+
+    .cloud1 { top: 5%; width: 120px; height: 40px; animation-duration: 25s; left: -150px; }
+    .cloud2 { top: 15%; width: 180px; height: 50px; animation-duration: 35s; left: -200px; animation-delay: 5s; }
+
+    @keyframes floatCloud {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(100vw + 250px)); }
+    }
+
+    /* Container */
+    .game-container {
+      width: 100%;
+      max-width: 680px;
+      background: #f1f2f6;
+      border: 4px solid #2f3542;
+      border-radius: 28px;
+      box-shadow: 0 12px 0 #2f3542, 0 20px 30px rgba(0,0,0,0.25);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Header & Lives */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 3px solid #2f3542;
+      border-radius: 18px;
+      padding: 10px 16px;
+      box-shadow: 0 4px 0 #2f3542;
+    }
+
+    .title-area h1 {
+      font-size: 1.3rem;
+      color: #1e90ff;
+      text-shadow: 1px 1px 0 #2f3542;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-group {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .lives-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 1.3rem;
+    }
+
+    .heart-shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Journey Track */
+    .journey-card {
+      background: linear-gradient(180deg, #70a1ff 0%, #1e90ff 100%);
+      border: 3.5px solid #2f3542;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 6px 0 #2f3542;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .journey-header {
+      display: flex;
+      justify-content: space-between;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-shadow: 1px 1px 0 #2f3542;
+      margin-bottom: 12px;
+    }
+
+    .ocean-track {
+      height: 50px;
+      background: rgba(0, 98, 204, 0.4);
+      border: 2px dashed #ffffff;
+      border-radius: 25px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+    }
+
+    .island-target {
+      position: absolute;
+      right: 10px;
+      font-size: 2.2rem;
+      z-index: 2;
+    }
+
+    .ship-avatar {
+      position: absolute;
+      font-size: 2.4rem;
+      left: 10px;
+      transition: left 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.3s ease;
+      z-index: 3;
+      filter: drop-shadow(2px 4px 0px rgba(0,0,0,0.2));
+    }
+
+    .ship-avatar.damaged {
+      animation: shipDamage 0.5s ease infinite alternate;
+    }
+
+    .ship-avatar.sinking {
+      animation: shipSink 1.2s forwards ease-in;
+    }
+
+    @keyframes shipDamage {
+      0% { transform: rotate(-10deg) translateY(0); }
+      100% { transform: rotate(10deg) translateY(-4px); }
+    }
+
+    @keyframes shipSink {
+      0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+      50% { transform: scale(0.8) translateY(15px) rotate(20deg); opacity: 0.8; }
+      100% { transform: scale(0.2) translateY(40px) rotate(45deg); opacity: 0; }
+    }
+
+    /* Question Box */
+    .question-card {
+      background: #ffffff;
+      border: 3.5px solid #2f3542;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 6px 0 #2f3542;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subject-avatar {
+      font-size: 3rem;
+      background: #eccc68;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid #2f3542;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #2f3542;
+    }
+
+    .sentence-text {
+      font-size: 1.4rem;
+      color: #2f3542;
+      font-weight: 700;
+    }
+
+    .question-prompt {
+      font-size: 1.1rem;
+      color: #1e90ff;
+      font-weight: 700;
+    }
+
+    /* Options Grid */
+    .answers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .btn-option {
+      background: #ffffff;
+      border: 3.5px solid #2f3542;
+      border-radius: 18px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #2f3542;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #2f3542;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+
+    .btn-option:hover {
+      background: #f1f2f6;
+    }
+
+    .btn-option:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #2f3542;
+    }
+
+    .btn-option.correct-choice {
+      background: var(--green-correct) !important;
+      color: white !important;
+      border-color: #2f3542 !important;
+    }
+
+    .btn-option.wrong-choice {
+      background: var(--red-wrong) !important;
+      color: white !important;
+      border-color: #2f3542 !important;
+    }
+
+    .btn-option:disabled {
+      cursor: not-allowed;
+      opacity: 0.85;
+    }
+
+    /* Toast Feedback Banner */
+    .feedback-banner {
+      min-height: 48px;
+      border-radius: 14px;
+      border: 3px solid #2f3542;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 0 #2f3542;
+    }
+
+    .feedback-banner.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feedback-banner.correct {
+      background: #e8f8f5;
+      color: #1e8449;
+    }
+
+    .feedback-banner.wrong {
+      background: #fdedec;
+      color: #c0392b;
+    }
+
+    /* Modal End Screen */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(47, 53, 66, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border: 4px solid #2f3542;
+      border-radius: 28px;
+      padding: 28px 20px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 12px 0 #2f3542;
+      transform: scale(0.85);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-emoji {
+      font-size: 4rem;
+      margin-bottom: 6px;
+      animation: bounce 1.2s infinite alternate;
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      color: #1e90ff;
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .results-table {
+      background: #f1f2f6;
+      border: 3px solid #2f3542;
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .res-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .res-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .res-val {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2f3542;
+    }
+
+    .encouragement-msg {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--yellow-shadow);
+      margin-bottom: 20px;
+    }
+
+    .btn-restart {
+      background: var(--yellow-btn);
+      color: #2f3542;
+      border: 3.5px solid #2f3542;
+      border-radius: 20px;
+      padding: 14px 28px;
+      font-family: inherit;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #2f3542;
+      width: 100%;
+      transition: transform 0.1s ease;
+    }
+
+    .btn-restart:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #2f3542;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-12px); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    @media (max-width: 500px) {
+      .answers-grid { grid-template-columns: 1fr; }
+      .sentence-text { font-size: 1.2rem; }
+      .subject-avatar { width: 55px; height: 55px; font-size: 2.2rem; }
+      .title-area h1 { font-size: 1.05rem; }
+      .stats-group { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating background clouds -->
+  <div class="bg-cloud cloud1"></div>
+  <div class="bg-cloud cloud2"></div>
+
+  <div class="game-container">
+    <!-- Header -->
+    <header>
+      <div class="title-area">
+        <h1>🚢 WHERE ARE WE GOING? 🏝️</h1>
+      </div>
+      <div class="stats-group">
+        <div class="lives-box" id="lives-container">
+          <span id="heart1">❤️</span>
+          <span id="heart2">❤️</span>
+          <span id="heart3">❤️</span>
+        </div>
+        <div>Pts: <span id="score-display" style="color: #1e90ff;">0</span></div>
+      </div>
+    </header>
+
+    <!-- Ocean Progress Track -->
+    <div class="journey-card">
+      <div class="journey-header">
+        <span>ISLAND JOURNEY</span>
+        <span id="progress-text">Question 1 / 8</span>
+      </div>
+      <div class="ocean-track">
+        <div id="ship" class="ship-avatar">🚢</div>
+        <div class="island-target">🏝️</div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="question-card">
+      <div id="subject-avatar" class="subject-avatar">👩</div>
+      <div id="sentence-text" class="sentence-text">She has to study English.</div>
+      <div class="question-prompt">Where does she have to go?</div>
+    </div>
+
+    <!-- Feedback Banner -->
+    <div id="feedback-banner" class="feedback-banner">🎉 CORRECT!</div>
+
+    <!-- Options Grid -->
+    <div id="answers-grid" class="answers-grid"></div>
+  </div>
+
+  <!-- Final Results Modal -->
+  <div id="results-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div id="modal-emoji" class="modal-emoji">🏝️</div>
+      <h2 id="modal-title" class="modal-title">JOURNEY COMPLETE!</h2>
+      <p id="modal-subtitle" class="modal-subtitle">You reached the island safely!</p>
+
+      <div class="results-table">
+        <div class="res-item">
+          <span class="res-label">Questions</span>
+          <span id="res-questions" class="res-val">8 / 8</span>
+        </div>
+        <div class="res-item">
+          <span class="res-label">Correct</span>
+          <span id="res-correct" class="res-val">7</span>
+        </div>
+        <div class="res-item">
+          <span class="res-label">Accuracy</span>
+          <span id="res-accuracy" class="res-val">87%</span>
+        </div>
+        <div class="res-item">
+          <span class="res-label">Final Score</span>
+          <span id="res-score" class="res-val" style="color: #1e90ff;">700</span>
+        </div>
+        <div class="res-item" style="grid-column: span 2;">
+          <span class="res-label">Ship Health</span>
+          <span id="res-lives" class="res-val">❤️❤️🖤</span>
+        </div>
+      </div>
+
+      <p id="encouragement-msg" class="encouragement-msg">🌟 Amazing! You know your places!</p>
+
+      <button id="restart-btn" class="btn-restart">🔄 PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script>
+    /* ===================================================================
+       1. QUESTION BANK (8 QUESTIONS - HAVE TO / HAS TO)
+       =================================================================== */
+    const QUESTION_BANK = [
+      {
+        id: 1,
+        avatar: "👩‍🎓",
+        sentence: "She has to study English.",
+        prompt: "Where does she have to go?",
+        correct: { name: "SCHOOL", icon: "🏫" },
+        options: [
+          { name: "SCHOOL", icon: "🏫" },
+          { name: "HOSPITAL", icon: "🏥" },
+          { name: "RESTAURANT", icon: "🍽️" },
+          { name: "BANK", icon: "🏦" }
+        ]
+      },
+      {
+        id: 2,
+        avatar: "👨‍💼",
+        sentence: "He has to see a doctor.",
+        prompt: "Where does he have to go?",
+        correct: { name: "HOSPITAL", icon: "🏥" },
+        options: [
+          { name: "HOSPITAL", icon: "🏥" },
+          { name: "LIBRARY", icon: "📚" },
+          { name: "BAKERY", icon: "🥖" },
+          { name: "POST OFFICE", icon: "📮" }
+        ]
+      },
+      {
+        id: 3,
+        avatar: "👨‍👩‍👧",
+        sentence: "They have to buy some food.",
+        prompt: "Where do they have to go?",
+        correct: { name: "SUPERMARKET", icon: "🛒" },
+        options: [
+          { name: "SUPERMARKET", icon: "🛒" },
+          { name: "BANK", icon: "🏦" },
+          { name: "THEATRE", icon: "🎭" },
+          { name: "POLICE STATION", icon: "👮" }
+        ]
+      },
+      {
+        id: 4,
+        avatar: "👩",
+        sentence: "She has to mail a letter.",
+        prompt: "Where does she have to go?",
+        correct: { name: "POST OFFICE", icon: "📮" },
+        options: [
+          { name: "POST OFFICE", icon: "📮" },
+          { name: "RESTAURANT", icon: "🍽️" },
+          { name: "HOSPITAL", icon: "🏥" },
+          { name: "BAKERY", icon: "🥖" }
+        ]
+      },
+      {
+        id: 5,
+        avatar: "👦",
+        sentence: "He has to borrow a book.",
+        prompt: "Where does he have to go?",
+        correct: { name: "LIBRARY", icon: "📚" },
+        options: [
+          { name: "LIBRARY", icon: "📚" },
+          { name: "BANK", icon: "🏦" },
+          { name: "PHARMACY", icon: "💊" },
+          { name: "RESTAURANT", icon: "🍽️" }
+        ]
+      },
+      {
+        id: 6,
+        avatar: "👩‍🦰",
+        sentence: "She has to buy some medicine.",
+        prompt: "Where does she have to go?",
+        correct: { name: "PHARMACY", icon: "💊" },
+        options: [
+          { name: "PHARMACY", icon: "💊" },
+          { name: "SCHOOL", icon: "🏫" },
+          { name: "THEATRE", icon: "🎭" },
+          { name: "SUPERMARKET", icon: "🛒" }
+        ]
+      },
+      {
+        id: 7,
+        avatar: "🧑‍🤝‍🧑",
+        sentence: "They have to watch a movie.",
+        prompt: "Where do they have to go?",
+        correct: { name: "THEATRE", icon: "🎭" },
+        options: [
+          { name: "THEATRE", icon: "🎭" },
+          { name: "HOSPITAL", icon: "🏥" },
+          { name: "POST OFFICE", icon: "📮" },
+          { name: "BANK", icon: "🏦" }
+        ]
+      },
+      {
+        id: 8,
+        avatar: "👨",
+        sentence: "He has to buy some bread.",
+        prompt: "Where does he have to go?",
+        correct: { name: "BAKERY", icon: "🥖" },
+        options: [
+          { name: "BAKERY", icon: "🥖" },
+          { name: "LIBRARY", icon: "📚" },
+          { name: "POLICE STATION", icon: "👮" },
+          { name: "SCHOOL", icon: "🏫" }
+        ]
+      }
+    ];
+
+    /* ===================================================================
+       2. SOUND EFFECTS SYNTHESIZER (WEB AUDIO API)
+       =================================================================== */
+    class SoundEffects {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      play(type) {
+        try {
+          this.init();
+          if (!this.ctx) return;
+
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          if (type === 'correct') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+            osc.start(now);
+            osc.stop(now + 0.35);
+          } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.setValueAtTime(140, now + 0.15);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+          } else if (type === 'win') {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+              const noteOsc = this.ctx.createOscillator();
+              const noteGain = this.ctx.createGain();
+              noteOsc.connect(noteGain);
+              noteGain.connect(this.ctx.destination);
+              noteOsc.type = 'triangle';
+              noteOsc.frequency.setValueAtTime(freq, now + (idx * 0.12));
+              noteGain.gain.setValueAtTime(0.2, now + (idx * 0.12));
+              noteGain.gain.linearRampToValueAtTime(0.01, now + (idx * 0.12) + 0.25);
+              noteOsc.start(now + (idx * 0.12));
+              noteOsc.stop(now + (idx * 0.12) + 0.25);
+            });
+          }
+        } catch (e) {
+          // Fallback if browser blocks audio
+        }
+      }
+    }
+
+    const sfx = new SoundEffects();
+
+    /* ===================================================================
+       3. GAME STATE & DOM CONTROLLERS
+       =================================================================== */
+    let questions = [];
+    let currentIndex = 0;
+    let lives = 3;
+    let score = 0;
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let isAnsweringLocked = false;
+
+    // DOM Elements
+    const livesContainer = document.getElementById('lives-container');
+    const scoreDisplay = document.getElementById('score-display');
+    const progressText = document.getElementById('progress-text');
+    const ship = document.getElementById('ship');
+
+    const subjectAvatar = document.getElementById('subject-avatar');
+    const sentenceText = document.getElementById('sentence-text');
+    const answersGrid = document.getElementById('answers-grid');
+    const feedbackBanner = document.getElementById('feedback-banner');
+
+    const resultsModal = document.getElementById('results-modal');
+    const modalEmoji = document.getElementById('modal-emoji');
+    const modalTitle = document.getElementById('modal-title');
+    const modalSubtitle = document.getElementById('modal-subtitle');
+    const resQuestions = document.getElementById('res-questions');
+    const resCorrect = document.getElementById('res-correct');
+    const resAccuracy = document.getElementById('res-accuracy');
+    const resScore = document.getElementById('res-score');
+    const resLives = document.getElementById('res-lives');
+    const encouragementMsg = document.getElementById('encouragement-msg');
+    const restartBtn = document.getElementById('restart-btn');
+
+    /* Helper: Shuffle Array */
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /* ===================================================================
+       4. GAME INITIALIZATION
+       =================================================================== */
+    function initGame() {
+      // Reset State
+      currentIndex = 0;
+      lives = 3;
+      score = 0;
+      correctCount = 0;
+      incorrectCount = 0;
+      isAnsweringLocked = false;
+
+      // Prepare & Shuffle Questions
+      questions = shuffleArray(QUESTION_BANK).map(q => ({
+        ...q,
+        options: shuffleArray(q.options)
+      }));
+
+      // Reset UI
+      scoreDisplay.textContent = '0';
+      updateLivesDisplay();
+      updateShipPosition();
+      ship.className = 'ship-avatar';
+      hideFeedback();
+      resultsModal.classList.remove('active');
+
+      // Render Question 1
+      renderQuestion();
+    }
+
+    function updateLivesDisplay() {
+      const h1 = document.getElementById('heart1');
+      const h2 = document.getElementById('heart2');
+      const h3 = document.getElementById('heart3');
+
+      h1.textContent = lives >= 1 ? '❤️' : '🖤';
+      h2.textContent = lives >= 2 ? '❤️' : '🖤';
+      h3.textContent = lives >= 3 ? '❤️' : '🖤';
+    }
+
+    function updateShipPosition() {
+      // Calculate ship percentage position from 0% to 80% (so it reaches 🏝️)
+      const maxDistance = 82; // percentage across ocean track
+      const step = maxDistance / 8;
+      const currentPos = currentIndex * step;
+      ship.style.left = `calc(${currentPos}% + 10px)`;
+    }
+
+    /* ===================================================================
+       5. RENDER QUESTION
+       =================================================================== */
+    function renderQuestion() {
+      if (currentIndex >= 8 || lives <= 0) {
+        return;
+      }
+
+      const q = questions[currentIndex];
+      progressText.textContent = `Question ${currentIndex + 1} / 8`;
+
+      subjectAvatar.textContent = q.avatar;
+      sentenceText.textContent = q.sentence;
+
+      // Render Answer Buttons
+      answersGrid.innerHTML = '';
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerHTML = `<span>${opt.icon}</span> <span>${opt.name}</span>`;
+        btn.addEventListener('click', () => handleAnswer(opt, btn));
+        answersGrid.appendChild(btn);
+      });
+
+      isAnsweringLocked = false;
+    }
+
+    /* ===================================================================
+       6. ANSWER HANDLING
+       =================================================================== */
+    function handleAnswer(selectedOpt, clickedBtn) {
+      if (isAnsweringLocked) return;
+      isAnsweringLocked = true;
+
+      const q = questions[currentIndex];
+      const allButtons = answersGrid.querySelectorAll('.btn-option');
+
+      // Disable all choices
+      allButtons.forEach(btn => btn.disabled = true);
+
+      if (selectedOpt.name === q.correct.name) {
+        // --- CORRECT ANSWER ---
+        sfx.play('correct');
+        clickedBtn.classList.add('correct-choice');
+
+        score += 100;
+        correctCount++;
+        scoreDisplay.textContent = score;
+
+        showFeedback('correct', '🎉 CORRECT! The ship is getting closer! 🚢');
+
+        // Move Ship Forward
+        currentIndex++;
+        updateShipPosition();
+
+        setTimeout(() => {
+          hideFeedback();
+          if (currentIndex < 8) {
+            renderQuestion();
+          } else {
+            endGame(true); // Reached Island
+          }
+        }, 1200);
+
+      } else {
+        // --- INCORRECT ANSWER ---
+        sfx.play('wrong');
+        clickedBtn.classList.add('wrong-choice');
+
+        // Highlight correct button
+        allButtons.forEach(btn => {
+          if (btn.textContent.includes(q.correct.name)) {
+            btn.classList.add('correct-choice');
+          }
+        });
+
+        lives--;
+        incorrectCount++;
+        updateLivesDisplay();
+
+        // Animate damage on ship & hearts
+        livesContainer.classList.add('heart-shake');
+        ship.classList.add('damaged');
+        setTimeout(() => {
+          livesContainer.classList.remove('heart-shake');
+          ship.classList.remove('damaged');
+        }, 600);
+
+        showFeedback('wrong', `🌊 OH NO! The correct answer is: ${q.correct.name}`);
+
+        setTimeout(() => {
+          hideFeedback();
+          if (lives <= 0) {
+            ship.classList.add('sinking');
+            setTimeout(() => {
+              endGame(false); // Ship Sank
+            }, 1000);
+          } else {
+            currentIndex++;
+            updateShipPosition();
+            if (currentIndex < 8) {
+              renderQuestion();
+            } else {
+              endGame(true);
+            }
+          }
+        }, 1800);
+      }
+    }
+
+    function showFeedback(type, text) {
+      feedbackBanner.textContent = text;
+      feedbackBanner.className = `feedback-banner show ${type}`;
+    }
+
+    function hideFeedback() {
+      feedbackBanner.className = 'feedback-banner';
+    }
+
+    /* ===================================================================
+       7. END GAME & RESULTS MODAL
+       =================================================================== */
+    function endGame(isWin) {
+      const totalAnswered = correctCount + incorrectCount;
+      const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+
+      resQuestions.textContent = `${totalAnswered} / 8`;
+      resCorrect.textContent = correctCount;
+      resAccuracy.textContent = `${accuracy}%`;
+      resScore.textContent = score;
+
+      // Hearts text
+      let heartsStr = '';
+      for (let i = 0; i < 3; i++) {
+        heartsStr += (i < lives) ? '❤️' : '🖤';
+      }
+      resLives.textContent = heartsStr;
+
+      if (isWin && lives > 0) {
+        sfx.play('win');
+        modalEmoji.textContent = '🏝️';
+        modalTitle.textContent = 'YOU REACHED THE ISLAND!';
+        modalSubtitle.textContent = 'Congratulations, Captain!';
+
+        if (accuracy >= 90) {
+          encouragementMsg.textContent = '🌟 Amazing! You are a place expert!';
+        } else if (accuracy >= 70) {
+          encouragementMsg.textContent = '👏 Great job! Keep practicing!';
+        } else if (accuracy >= 50) {
+          encouragementMsg.textContent = '💪 Good effort! Keep learning!';
+        } else {
+          encouragementMsg.textContent = '😊 Keep practicing! You can do it!';
+        }
+      } else {
+        modalEmoji.textContent = '🌊💥';
+        modalTitle.textContent = 'THE SHIP SANK!';
+        modalSubtitle.textContent = "Oh no! The ship didn't reach the island.";
+        encouragementMsg.textContent = '😊 Don\'t give up! Try again and reach the island!';
+      }
+
+      resultsModal.classList.add('active');
+    }
+
+    // Event Listeners
+    restartBtn.addEventListener('click', initGame);
+
+    // Start on Page Load
+    window.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>
